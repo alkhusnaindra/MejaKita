@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Meja {
+  id      Int        @id @default(autoincrement())
+  uuid    String     @unique
+  status  StatusMeja @default(TERSEDIA)
+  Pesanan Pesanan[]
+}
+
+enum StatusMeja {
+  TERSEDIA
+  DIPESAN
+}
+
+model Menu {
+  id          Int           @id @default(autoincrement())
+  nama        String
+  deskripsi   String?
+  harga       Int
+  gambar      String?
+  Kategori    KategoriMenu
+  PesananItem PesananItem[]
+}
+
+model Pesanan {
+  id              Int           @id @default(autoincrement())
+  mejaId          Int
+  meja            Meja          @relation(fields: [mejaId], references: [id])
+  totalHarga      Int
+  metodeBayar     MetodeBayar
+  statusBayar     StatusBayar
+  midtransOrderId String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  PesananItem     PesananItem[]
+}
+
+enum MetodeBayar {
+  OFFLINE
+  ONLINE
+}
+
+enum StatusBayar {
+  PENDING
+  LUNAS
+  DIBATALKAN
+}
+
+model PesananItem {
+  id        Int     @id @default(autoincrement())
+  pesananId Int
+  pesanan   Pesanan @relation(fields: [pesananId], references: [id])
+  menuId    Int
+  menu      Menu    @relation(fields: [menuId], references: [id])
+  jumlah    Int
+  subtotal  Int
+}
+
+enum KategoriMenu {
+  MAKANAN
+  MINUMAN
+}
