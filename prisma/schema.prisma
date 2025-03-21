@@ -31,45 +31,59 @@ model Menu {
   deskripsi   String?
   harga       Int
   gambar      String?
-  Kategori    KategoriMenu
+  kategoriId  Int
+  kategori    KategoriMenu  @relation(fields: [kategoriId], references: [id])
   PesananItem PesananItem[]
 }
 
+model KategoriMenu {
+  id    Int    @id @default(autoincrement())
+  nama  String
+  menus Menu[]
+}
+
 model Pesanan {
-  id              Int           @id @default(autoincrement())
-  mejaId          Int
-  meja            Meja          @relation(fields: [mejaId], references: [id])
-  totalHarga      Int
-  metodeBayar     MetodeBayar
-  statusBayar     StatusBayar
-  midtransOrderId String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  PesananItem     PesananItem[]
+  id         Int           @id @default(autoincrement())
+  mejaId     Int
+  totalHarga Int
+  status     StatusPesanan @default(DIPROSES)
+  meja       Meja          @relation(fields: [mejaId], references: [id])
+  items      PesananItem[]
+  pembayaran Pembayaran?
 }
 
-enum MetodeBayar {
-  OFFLINE
-  ONLINE
-}
-
-enum StatusBayar {
-  PENDING
-  LUNAS
+enum StatusPesanan {
+  DIPROSES
+  SELESAI
   DIBATALKAN
 }
 
 model PesananItem {
   id        Int     @id @default(autoincrement())
   pesananId Int
-  pesanan   Pesanan @relation(fields: [pesananId], references: [id])
   menuId    Int
-  menu      Menu    @relation(fields: [menuId], references: [id])
   jumlah    Int
   subtotal  Int
+  pesanan   Pesanan @relation(fields: [pesananId], references: [id])
+  menu      Menu    @relation(fields: [menuId], references: [id])
 }
 
-enum KategoriMenu {
-  MAKANAN
-  MINUMAN
+model Pembayaran {
+  id         Int              @default(autoincrement())
+  pesananId  Int              @unique
+  metode     MetodePembayaran
+  status     StatusPembayaran @default(PENDING)
+  midtransId String?
+  pesanan    Pesanan          @relation(fields: [pesananId], references: [id])
+}
+
+enum MetodePembayaran {
+  OFFLINE
+  ONLINE
+}
+
+enum StatusPembayaran {
+  PENDING
+  SUCCESS
+  FAILED
 }
